@@ -23,7 +23,7 @@
             const db = e.target.result;
 
             const objectStore = db.createObjectStore('crm',{
-                KeyPath: 'id',
+                keyPath: 'id',
                 autoIncrement: true
             });
 
