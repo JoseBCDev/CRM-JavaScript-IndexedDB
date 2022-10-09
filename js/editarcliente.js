@@ -1,34 +1,67 @@
 (function(){    //IFI
 
-    let DB;
+    let idCliente;
+
+
+    const nombreInput = document.querySelector('#nombre');
+    const emailInput = document.querySelector('#email');
+    const telefonoInput = document.querySelector('#telefono');
+    const empresaInput = document.querySelector('#empresa');
+
+    const formulario = document.querySelector('#formulario');
 
     document.addEventListener('DOMContentLoaded',()=>{
-        conectarDB();
+       conectarDB();
 
         const parametrosURL = new URLSearchParams(window.location.search);
-        const idCliente = parametrosURL.get('id');
+        idCliente = parametrosURL.get('id');
         if(idCliente)
         {
             setTimeout(() => {
                  obtenerCliente(idCliente);
-            }, 1000);
-           
+            }, 1000);          
         }
 
+       formulario.addEventListener('submit',actualizarCliente)
 
     })
 
-     function conectarDB(){
-        const abrirConexion = window.indexedDB.open('crm',1);
+    function actualizarCliente(e){
+        e.preventDefault();
 
-        abrirConexion.onerror = function(){
-            console.log('No se pudo conectar a la BDindex');
+        if(nombreInput.value === '' || emailInput.value === '' || telefonoInput.value === '' || empresaInput.value === '')
+        {
+            imprimirAlerta('Todos los campos son Obligatorios','error');
+
+            return;
         }
 
-        abrirConexion.onsuccess = function(){
-            console.log('Se establecio conexion con exito');
-            DB = abrirConexion.result;
+        const clienteActualizado = {
+            nombre: nombreInput.value,
+            email: emailInput.value,
+            telefono: telefonoInput.value,
+            empresa: empresaInput.value,
+            id: Number(idCliente)
         }
+
+        const transaccion = DB.transaction(['crm'],'readwrite');
+
+        const objectStore = transaccion.objectStore('crm');
+
+        objectStore.put(clienteActualizado);
+
+        transaccion.oncomplete = function(){
+            imprimirAlerta('Se realizo la Modificación');
+
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 3000);
+        }
+
+        transaccion.onerror = function(){
+            imprimirAlerta('No se pudo modificar','error');
+        }
+
     }
 
     function obtenerCliente(idCliente){
@@ -55,10 +88,13 @@
 
     function llenarFormulario(cliente){
         const {nombre,telefono,email,empresa,id} = cliente;
-
-        const nombreInput = document.querySelector('#nombre');
+        
 
         nombreInput.value = nombre;
+        emailInput.value = email;
+        telefonoInput.value = telefono;
+        empresaInput.value = empresa;
+
     }
 
 })();
